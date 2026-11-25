@@ -1,121 +1,93 @@
-<div align="center">
-  <img src="docs/public/frappe-docker.png" alt="Frappe Docker" width="80" />
-  <h1>Frappe Docker</h1>
-  <p>Docker images and orchestration for Frappe applications.</p>
-  <p>
-    <a href="https://github.com/frappe/frappe_docker/actions/workflows/core-build-stable.yml">
-      <img src="https://img.shields.io/github/actions/workflow/status/frappe/frappe_docker/core-build-stable.yml?branch=main&label=Build%20Stable" alt="Build Stable" />
-    </a>
-    <a href="https://github.com/frappe/frappe_docker/actions/workflows/core-build-develop.yml">
-      <img src="https://img.shields.io/github/actions/workflow/status/frappe/frappe_docker/core-build-develop.yml?branch=main&label=Build%20Develop" alt="Build Develop" />
-    </a>
-    <a href="https://frappe.github.io/frappe_docker/">
-      <img src="https://img.shields.io/badge/Docs-Open%20Site-0A7EA4" alt="Docs" />
-    </a>
-  </p>
+ <div align="center">
+  <img src="docs/public/frappe-docker.png" alt="Frappe Docker ISP" width="80" />
+
+  # ERPNext для інтернет-провайдера (frappe_docker_isp)
+
+  **Швидке розгортання ERPNext у Docker та автоматичний імпорт бази даних інтернет-провайдера ТОВ «Полтава-Телеком».**
 </div>
 
-## What is this?
+## Про проект
 
-This repository is the official container setup for Frappe applications.
+Цей репозиторій зібрано на базі офіційного `frappe_docker` для повної автоматизації роботи інтернет-провайдера.
 
-It provides Docker images, Compose configurations, and documentation for running Frappe applications, including ERPNext, CRM, Helpdesk, and other Frappe apps, in containers.
+Замість ручного налаштування системи та заповнення карток, один скрипт піднімає контейнери, проходить початкове налаштування компанії та переносить усі дані з реляційної бази MySQL (`isp_volkov`) у модулі ERPNext.
 
-Use it if you want to:
+### Що працює з коробки:
 
-- run ERPNext, CRM, Helpdesk, or other Frappe apps with Docker
-- start from a quick demo setup
-- use production-ready Docker images and Compose setups
-- build custom app images
-- deploy and operate Frappe in production
+- Автоматичне створення компанії ТОВ «Полтава-Телеком» (валюта `UAH`, часовий пояс `Europe/Kyiv`).
+- Готовий обліковий запис адміністратора (`admin` / `admin`).
+- Миттєві повторні перезапуски завдяки збереженню знімка чистої бази (`.clean_backup/`).
+- Перенесення 8 ключових сутностей з `data/isp_volkov.json`:
+  - Відділи.
+  - Працівники.
+  - Абоненти.
+  - Тарифи.
+  - Послуги.
+  - Обладнання.
+  - Договори.
+  - Заявки техпідтримки.
 
-## Repository Structure
+## Швидкий старт
+
+### 1. Клонуйте репозиторій та надайте права скриптам:
 
 ```bash
-frappe_docker/
-├── docs/                 # Complete documentation
-├── overrides/            # Docker Compose configurations for different scenarios
-├── compose.yaml          # Base Compose File for production setups
-├── pwd.yml               # Single Compose File for quick disposable demo
-├── images/               # Dockerfiles for building Frappe images
-├── development/          # Development environment configurations
-├── devcontainer-example/ # VS Code devcontainer setup
-└── resources/            # Helper scripts and configuration templates
+git clone https://github.com/alex-cx-v/frappe_docker_isp.git
+cd frappe_docker_isp
+
+chmod +x deploy_erpnext.sh start_erpnext.sh stop_erpnext.sh clean_erpnext.sh
 ```
 
-> This section describes the structure of **this repository**, not the Frappe framework itself.
+### 2. Запустіть розгортання:
 
-### Key Components
-
-- `docs/` - Canonical documentation for all deployment and operational workflows
-- `overrides/` - Opinionated Compose overrides for common deployment patterns
-- `compose.yaml` - Base compose file for production setups (production)
-- `pwd.yml` - Disposable demo environment (non-production)
-
-## Documentation
-
-The full `frappe_docker` documentation is available in [`docs/`](docs/) and published at [frappe.github.io/frappe_docker](https://frappe.github.io/frappe_docker/).
-
-Documentation is gradually being organized into [Tutorials](docs/10-tutorials/index.md), [How-to Guides](docs/11-how-to/index.md), [Reference](docs/12-reference/index.md), and [Explanation](docs/13-explanation/index.md). The category indexes explain each category's purpose. To help, see the [documentation contribution guide](docs/11-how-to/01-contribute-documentation.md).
-
-### Recommended entry points:
-
-- **New here:** [Getting Started Guide](docs/getting-started.md)
-- **Choosing a setup:** [Deployment methods](docs/01-getting-started/01-choosing-a-deployment-method.md)
-- **ARM64 notes:** [ARM64](docs/01-getting-started/03-arm64.md)
-- **Container setup overview:** [Container Setup Overview](docs/02-setup/01-overview.md)
-- **Running in production:** [Deployment how-to guides](docs/11-how-to/)
-- **Operating a deployment:** [Operations docs](docs/04-operations/)
-- **Development workflows:** [Development](docs/05-development/01-development.md)
-- **FAQ:** [Frequently Asked Questions](https://github.com/frappe/frappe_docker/wiki/Frequently-Asked-Questions)
-
-## Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose v2](https://docs.docker.com/compose/)
-- [git](https://docs.github.com/en/get-started/getting-started-with-git/set-up-git)
-
-> For Docker basics and best practices refer to Docker's [documentation](http://docs.docker.com)
-
-## Demo setup
-
-The fastest way to try Frappe locally is with the single-file demo setup in `pwd.yml`.
-
-### Try on your environment
-
-> **⚠️ Disposable demo only**
->
-> **This setup is intended for short-lived evaluation only.** You will not be able to install custom apps to this setup. For production deployments, custom configurations, and detailed explanations, see the full documentation.
-
-First clone the repo:
-
-```sh
-git clone https://github.com/frappe/frappe_docker
-cd frappe_docker
+```bash
+./deploy_erpnext.sh
 ```
 
-Then run:
+> **Примітка:** Перший запуск триває декілька хвилин, поки створюється база ERPNext і зберігається її чиста копія. Усі наступні запуски проходять за кілька секунд.
 
-```sh
-docker compose -f pwd.yml up -d
+### 3. Відкрийте систему в браузері:
+
+- **Адреса:** [http://localhost:8080](http://localhost:8080)
+- **Логін:** `admin`
+- **Пароль:** `admin`
+
+## Керування середовищем
+
+| Скрипт | Що робить |
+|---|---|
+| `./deploy_erpnext.sh` | Піднімає контейнери, налаштовує систему та імпортує дані з `data/isp_volkov.json` |
+| `./stop_erpnext.sh` | Призупиняє контейнери на паузу — усі дані в базі залишаються на місці |
+| `./start_erpnext.sh` | Миттєво вмикає раніше зупинені контейнери |
+| `./clean_erpnext.sh` | Повністю видаляє контейнери, томи бази даних та локальну копію `.clean_backup/` |
+
+## Структура проекту
+
+```text
+frappe_docker_isp/
+├── data/
+│   └── isp_volkov.json     # Вивантажені дані провайдера з MySQL / phpMyAdmin
+├── deploy_erpnext.sh       # Головний скрипт розгортання та імпорту
+├── start_erpnext.sh        # Запуск зупинених контейнерів
+├── stop_erpnext.sh         # Зупинка контейнерів зі збереженням даних
+├── clean_erpnext.sh        # Повне очищення середовища
+├── pwd.yml                 # Docker Compose конфігурація
+└── docs/                   # Офіційна документація Frappe Docker
 ```
 
-Wait for a couple of minutes for ERPNext site to be created or check `create-site` container logs before opening browser on port `8080`. (username: `Administrator`, password: `admin`)
+## Як дані переїжджають у ERPNext
 
-## Contributing
+| Таблиця в MySQL (`isp_volkov`) | Сутність у ERPNext | Що саме переноситься |
+|---|---|---|
+| `Departments` | `Department` | Відділи компанії |
+| `Employees` | `Employee`, `Designation` | Картки працівників, посади, стать, дати народження та прийому на роботу |
+| `Subscribers` | `Customer` | Абоненти (фізичні та юридичні особи) з телефонами й поштою |
+| `TariffPlans` | `Item` (`Services`) | Тарифні плани зі швидкістю та щомісячною абонплатою |
+| `AdditionalServices` | `Item` (`Services`) | Додаткові послуги (статичний IP, Інтернет-ТБ, відеоспостереження) |
+| `Equipment` | `Item` (`Products`) | Роутери та ONU-термінали із серійними номерами й цінами |
+| `Contracts` | `Contract` | Абонентські договори з прив'язкою до клієнта, тарифу й статусу |
+| `SupportTickets` | `Issue` | Звернення в техпідтримку з пріоритетами та статусами виконання |
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+## Ліцензія
 
-See the [repository versioning policy](docs/12-reference/01-repository-versioning-policy.md) for release classification, compatibility boundaries, and build-tool minimum changes.
-
-This repository is only for container related stuff. You also might want to contribute to:
-
-## Resources
-
-- [Frappe framework](https://github.com/frappe/frappe),
-- [ERPNext](https://github.com/frappe/erpnext),
-- [Frappe Bench](https://github.com/frappe/bench).
-
-## License
-
-This repository is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+Проект базується на `frappe_docker` та поширюється за ліцензією MIT (див. [LICENSE](LICENSE)).

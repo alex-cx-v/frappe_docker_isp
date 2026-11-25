@@ -1,0 +1,66 @@
+[
+{"type":"header","version":"5.2.3","comment":"Export to JSON plugin for phpMyAdmin"},
+{"type":"database","name":"isp_volkov"},
+{"type":"table","name":"AdditionalServices","database":"isp_volkov","data":
+[
+{"id_service":"1","name":"Статична IPv4-адреса","monthly_price":"50.00"},
+{"id_service":"2","name":"Пакет Інтернет-ТБ","monthly_price":"90.00"},
+{"id_service":"3","name":"Хмарне відеоспостереження","monthly_price":"120.00"}
+]
+}
+,{"type":"table","name":"Contracts","database":"isp_volkov","data":
+[
+{"id_contract":"1","contract_number":"DOG-2026-001","sign_date":"2026-01-15","status":"Чинний","id_subscriber":"1","id_tariff":"2"},
+{"id_contract":"2","contract_number":"DOG-2026-002","sign_date":"2026-02-01","status":"Чинний","id_subscriber":"2","id_tariff":"3"},
+{"id_contract":"3","contract_number":"DOG-2026-003","sign_date":"2026-03-10","status":"Призупинений","id_subscriber":"3","id_tariff":"1"},
+{"id_contract":"4","contract_number":"DOG-2026-004","sign_date":"2026-04-05","status":"Чинний","id_subscriber":"4","id_tariff":"3"}
+]
+}
+,{"type":"table","name":"Departments","database":"isp_volkov","data":
+[
+{"id_department":"1","name":"Абонентський відділ","location":"Корпус 1, каб. 102","phone":"+380532501010"},
+{"id_department":"2","name":"Технічна підтримка","location":"Корпус 1, каб. 105","phone":"+380532502020"},
+{"id_department":"3","name":"Мережевий відділ","location":"Корпус 2, каб. 201","phone":"+380532503030"},
+{"id_department":"4","name":"Бухгалтерія","location":"Корпус 1, каб. 210","phone":"+380532504040"}
+]
+}
+,{"type":"table","name":"Employees","database":"isp_volkov","data":
+[
+{"id_employee":"1","full_name":"Шевченко Андрій Миколайович","gender":"Чоловіча","birth_date":"1993-04-12","hire_date":"2024-03-15","position":"Провідний мережевий інженер","email":"shevchenko@isp.ua","phone":"+380501234567","id_department":"3"},
+{"id_employee":"2","full_name":"Ковальчук Олена Ігорівна","gender":"Жіноча","birth_date":"1998-03-22","hire_date":"2024-06-10","position":"Оператор абонентського відділу","email":"kovalchuk@isp.ua","phone":"+380672345678","id_department":"1"},
+{"id_employee":"3","full_name":"Бондаренко Дмитро Сергійович","gender":"Чоловіча","birth_date":"1995-11-08","hire_date":"2024-08-15","position":"Інженер технічної підтримки","email":"bondarenko@isp.ua","phone":"+380633456789","id_department":"2"},
+{"id_employee":"4","full_name":"Ткаченко Ірина Петрівна","gender":"Жіноча","birth_date":"1991-07-19","hire_date":"2023-02-01","position":"Бухгалтер з розрахунків","email":"tkachenko@isp.ua","phone":"+380954567890","id_department":"4"}
+]
+}
+,{"type":"table","name":"Equipment","database":"isp_volkov","data":
+[
+{"id_equipment":"1","model":"TP-Link Archer AX53","serial_number":"TPL99887766","unit_price":"2100.00","status":"Видано абоненту","id_contract":"1"},
+{"id_equipment":"2","model":"MikroTik hAP ac3","serial_number":"MTK77665544","unit_price":"3400.00","status":"Видано абоненту","id_contract":"2"},
+{"id_equipment":"3","model":"ONU Picotel PU-E910","serial_number":"ONU55443322","unit_price":"650.00","status":"На складі","id_contract":null},
+{"id_equipment":"4","model":"TP-Link Archer C6","serial_number":"TPL11223344","unit_price":"1350.00","status":"На складі","id_contract":null}
+]
+}
+,{"type":"table","name":"Subscribers","database":"isp_volkov","data":
+[
+{"id_subscriber":"1","full_name":"Мельник Тарас Григорович","subscriber_type":"Фізична особа","phone":"+380951112233","email":"melnyk@gmail.com","address":"вул. Соборності, 45, кв. 12","balance":"450.00"},
+{"id_subscriber":"2","full_name":"ТОВ \"Полтава-Агро\"","subscriber_type":"Юридична особа","phone":"+380509998877","email":"office@agro.pl.ua","address":"просп. Миру, 18, оф. 4","balance":"1200.00"},
+{"id_subscriber":"3","full_name":"Савченко Марія Петрівна","subscriber_type":"Фізична особа","phone":"+380684445566","email":"savchenko@ukr.net","address":"вул. Європейська, 102, кв. 88","balance":"-150.00"},
+{"id_subscriber":"4","full_name":"ФОП Кравченко В. М.","subscriber_type":"Юридична особа","phone":"+380637778899","email":"kravchenko@biz.ua","address":"вул. Небесної Сотні, 14","balance":"600.00"}
+]
+}
+,{"type":"table","name":"SupportTickets","database":"isp_volkov","data":
+[
+{"id_ticket":"1","subject":"Немає лінку на порту після грози","created_at":"2026-11-20 09:15:00","priority":"Високий","status":"Вирішено","id_contract":"1","id_employee":"3"},
+{"id_ticket":"2","subject":"Заміна маршрутизатора в офісі","created_at":"2026-11-22 11:30:00","priority":"Середній","status":"В роботі","id_contract":"2","id_employee":"1"},
+{"id_ticket":"3","subject":"Низька швидкість завантаження у вечірній час","created_at":"2026-11-23 19:45:00","priority":"Середній","status":"В роботі","id_contract":"4","id_employee":"3"},
+{"id_ticket":"4","subject":"Консультація щодо відновлення обслуговування","created_at":"2026-11-24 10:10:00","priority":"Низький","status":"Новий","id_contract":"3","id_employee":"2"}
+]
+}
+,{"type":"table","name":"TariffPlans","database":"isp_volkov","data":
+[
+{"id_tariff":"1","name":"Базовий 100","speed_mbps":"100","monthly_fee":"250.00"},
+{"id_tariff":"2","name":"Гігабіт Макс","speed_mbps":"1000","monthly_fee":"400.00"},
+{"id_tariff":"3","name":"Бізнес Офіс 500","speed_mbps":"500","monthly_fee":"950.00"}
+]
+}
+]

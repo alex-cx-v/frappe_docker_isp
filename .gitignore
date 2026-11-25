@@ -32,3 +32,10 @@ node_modules
 # VitePress
 **/.vitepress/dist
 **/.vitepress/cache
+
+# Local clean DB snapshot for fast restarts
+.clean_backup/
+
+# Logs & temporary files
+*.log
+.DS_Store
