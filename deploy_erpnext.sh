@@ -8,13 +8,13 @@ BACKUP_DIR="$SCRIPT_DIR/.clean_backup"
 
 # Перевіряємо наявність файлу з даними
 if [ ! -f "$JSON_FILE" ]; then
-  echo "Помилка: не знайдено файл із даними $JSON_FILE"
+  echo "Не знайдено файл із даними: $JSON_FILE"
   exit 1
 fi
 
-# Якщо це перший запуск — розгортаємо з нуля та зберігаємо знімок чистої бази
+# Перший запуск створює базу з нуля та зберігає чистий знімок; наступні — миттєво відновлюють його
 if [ ! -d "$BACKUP_DIR" ]; then
-  echo "Перший запуск: очищаємо старі контейнери та піднімаємо нові..."
+  echo "Перший запуск: очищаємо старі контейнери та запускаємо нові..."
   sudo docker compose -f "$COMPOSE_FILE" down -v --remove-orphans
   sudo docker compose -f "$COMPOSE_FILE" up -d
 
@@ -30,9 +30,7 @@ if [ ! -d "$BACKUP_DIR" ]; then
 else
   echo "Запускаємо контейнери та відновлюємо чисту базу зі збереженої копії..."
   sudo docker compose -f "$COMPOSE_FILE" up -d
-  sleep 5
   BACKEND_ID=$(sudo docker compose -f "$COMPOSE_FILE" ps -q backend)
-  sudo docker exec "$BACKEND_ID" mkdir -p /tmp/clean_backup
   sudo docker cp "$BACKUP_DIR/." "$BACKEND_ID":/tmp/clean_backup/
   DB_SQL=$(ls "$BACKUP_DIR"/*-database.sql.gz | head -n 1 | xargs basename)
   sudo docker exec "$BACKEND_ID" bench --site frontend restore "/tmp/clean_backup/$DB_SQL" --mariadb-root-password admin --force
@@ -90,6 +88,7 @@ for r in tables.get("Departments", []):
 frappe.db.commit()
 
 # 4. Посади -> Designation та Співробітники -> Employee
+# Прибираємо можливий тестовий запис із Setup Wizard, щоб перенести точний список з БД
 for existing_emp in frappe.get_all("Employee", pluck="name"):
     frappe.delete_doc("Employee", existing_emp, force=True, ignore_permissions=True)
 frappe.db.commit()
@@ -99,48 +98,45 @@ created_designations = set()
 emp_rows = tables.get("Employees", [])
 
 for idx, r in enumerate(emp_rows, start=1):
-    try:
-        pos = r.get("position")
-        if pos and pos not in created_designations:
-            if not frappe.db.exists("Designation", pos):
-                frappe.get_doc({"doctype": "Designation", "designation_name": pos}).insert(ignore_permissions=True)
-            created_designations.add(pos)
+    pos = r.get("position")
+    if pos and pos not in created_designations:
+        if not frappe.db.exists("Designation", pos):
+            frappe.get_doc({"doctype": "Designation", "designation_name": pos}).insert(ignore_permissions=True)
+        created_designations.add(pos)
 
-        parts = r["full_name"].strip().split()
-        raw_gender = r.get("gender")
-        if raw_gender in ("Чоловіча", "Male"):
-            gender = "Male"
-        elif raw_gender in ("Жіноча", "Female"):
-            gender = "Female"
-        else:
-            gender = "Female" if r["full_name"].endswith("вна") else "Male"
+    parts = r["full_name"].strip().split()
+    raw_gender = r.get("gender")
+    if raw_gender in ("Чоловіча", "Male"):
+        gender = "Male"
+    elif raw_gender in ("Жіноча", "Female"):
+        gender = "Female"
+    else:
+        gender = "Female" if r["full_name"].endswith("вна") else "Male"
 
-        emp_id = f"HR-EMP-{idx:05d}"
-        emp_doc = frappe.get_doc({
-            "doctype": "Employee",
-            "name": emp_id,
-            "naming_series": "HR-EMP-",
-            "employee_number": emp_id,
-            "first_name": " ".join(parts[:2]) if len(parts) >= 2 else r["full_name"],
-            "last_name": parts[-1] if len(parts) >= 3 else "",
-            "gender": gender,
-            "date_of_birth": str(r.get("birth_date") or "1995-05-15"),
-            "date_of_joining": str(r.get("hire_date") or "2026-01-01"),
-            "designation": pos,
-            "department": depts.get(str(r.get("id_department"))),
-            "company_email": r.get("email"),
-            "cell_number": r.get("phone"),
-            "status": "Active",
-            "company": company
-        })
-        emp_doc.flags.name_set = True
-        emp_doc.insert(ignore_permissions=True, ignore_mandatory=True)
-        employees_map[str(r.get("id_employee", idx))] = r["full_name"]
-        frappe.db.commit()
-        print(f"OK Employee {idx}: {emp_doc.name} -> {r['full_name']}")
-    except Exception as e:
-        print(f"ERR Employee {idx} ({r.get('full_name')}): {type(e).__name__}: {e}")
+    emp_id = f"HR-EMP-{idx:05d}"
+    emp_doc = frappe.get_doc({
+        "doctype": "Employee",
+        "name": emp_id,
+        "naming_series": "HR-EMP-",
+        "employee_number": emp_id,
+        "first_name": " ".join(parts[:2]) if len(parts) >= 2 else r["full_name"],
+        "last_name": parts[-1] if len(parts) >= 3 else "",
+        "gender": gender,
+        "date_of_birth": str(r.get("birth_date") or "1995-05-15"),
+        "date_of_joining": str(r.get("hire_date") or "2026-01-01"),
+        "designation": pos,
+        "department": depts.get(str(r.get("id_department"))),
+        "company_email": r.get("email"),
+        "cell_number": r.get("phone"),
+        "status": "Active",
+        "company": company
+    })
+    emp_doc.flags.name_set = True
+    emp_doc.insert(ignore_permissions=True, ignore_mandatory=True)
+    employees_map[str(r.get("id_employee", idx))] = r["full_name"]
+    frappe.db.commit()
 
+# Оновлюємо системний лічильник серії HR-EMP-, щоб ручне додавання працювало коректно
 if emp_rows:
     frappe.db.sql(
         "INSERT INTO `tabSeries` (name, current) VALUES ('HR-EMP-', %s) ON DUPLICATE KEY UPDATE current = %s",
@@ -215,7 +211,7 @@ for r in tables.get("Contracts", []):
         "party_type": "Customer",
         "party_name": cust_name,
         "start_date": str(r["sign_date"]),
-        "status": "Active" if r.get("status") == "Чинний" else "Inactive",
+S        "status": "Active" if r.get("status") == "Чинний" else "Inactive",
         "contract_terms": f"Договір №{r['contract_number']} | Тариф: {tariffs.get(str(r['id_tariff']), '')}"
     }).insert(ignore_permissions=True)
 
@@ -239,6 +235,7 @@ for r in tables.get("SupportTickets", []):
 frappe.db.commit()
 frappe.clear_cache()
 
+# Контрольна перевірка кількості перенесених записів
 print("\n=== РЕЗУЛЬТАТ ПЕРЕНЕСЕННЯ ДАНИХ У ERPNEXT ===")
 print(f"Відділи (Department):      {frappe.db.count('Department', {'company': company})}")
 print(f"Співробітники (Employee):  {frappe.db.count('Employee', {'company': company})}")
