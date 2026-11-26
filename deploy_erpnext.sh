@@ -211,7 +211,7 @@ for r in tables.get("Contracts", []):
         "party_type": "Customer",
         "party_name": cust_name,
         "start_date": str(r["sign_date"]),
-S        "status": "Active" if r.get("status") == "Чинний" else "Inactive",
+        "status": "Active" if r.get("status") == "Чинний" else "Inactive",
         "contract_terms": f"Договір №{r['contract_number']} | Тариф: {tariffs.get(str(r['id_tariff']), '')}"
     }).insert(ignore_permissions=True)
 
